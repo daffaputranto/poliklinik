@@ -16,6 +16,22 @@
         </div>
     </div>
 
+    {{-- Notifikasi --}}
+    @php $belumDibaca = auth()->user()->unreadNotifications()->count(); @endphp
+    <a href="{{ route('notifications.index') }}" class="btn btn-square btn-ghost relative" title="Notifikasi">
+        <i class="fas fa-bell text-lg"></i>
+        @if($belumDibaca > 0)
+        <span class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
+            {{ $belumDibaca > 99 ? '99+' : $belumDibaca }}
+        </span>
+        @endif
+    </a>
+
+    {{-- Profile / ganti password --}}
+    <a href="{{ route('profile.edit') }}" class="btn btn-square btn-ghost" title="Profile & ganti password">
+        <i class="fas fa-user-gear text-lg"></i>
+    </a>
+
     {{-- Fullscreen --}}
     <button onclick="toggleFullscreen()" class="btn btn-square btn-ghost">
         <i id="fsIcon" class="fas fa-expand w-5 h-5"></i>
@@ -26,7 +42,7 @@
 
         <div class="text-right hidden sm:block">
             <div class="text-sm font-semibold leading-tight">
-                {{ auth()->user()->name ?? 'Pengguna' }}
+                {{ auth()->user()->nama ?? 'Pengguna' }}
             </div>
             <div class="text-xs text-base-content/50 leading-tight">
                 {{ auth()->user()->role ?? 'Admin Sistem' }}
@@ -36,7 +52,7 @@
         <div class="avatar">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
                 <span class="text-sm font-semibold leading-none">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                    {{ strtoupper(substr(auth()->user()->nama ?? 'U', 0, 1)) }}
                 </span>
             </div>
         </div>
@@ -46,16 +62,16 @@
 
 <script>
     function toggleFullscreen() {
-    const icon = document.getElementById('fsIcon');
+        const icon = document.getElementById('fsIcon');
 
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-        icon.classList.remove('fa-expand');
-        icon.classList.add('fa-compress');
-    } else {
-        document.exitFullscreen();
-        icon.classList.remove('fa-compress');
-        icon.classList.add('fa-expand');
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            icon.classList.remove('fa-expand');
+            icon.classList.add('fa-compress');
+        } else {
+            document.exitFullscreen();
+            icon.classList.remove('fa-compress');
+            icon.classList.add('fa-expand');
+        }
     }
-}
 </script>

@@ -8,89 +8,77 @@ use Illuminate\Http\Request;
 
 class ObatController extends Controller
 {
+    private function rules(): array
+    {
+        return [
+            'nama_obat' => 'required|string|max:255',
+            'kemasan'   => 'required|string|max:35',
+            'stok'      => 'required|integer|min:0',
+            'harga'     => 'required|integer|min:0',
+        ];
+    }
 
-# Function index() digunakan untuk menampilkan daftar data obat yang tersimpan di database.
+    private function messages(): array
+    {
+        return [
+            'nama_obat.required' => 'Nama obat wajib diisi.',
+            'nama_obat.max'      => 'Nama obat maksimal 255 karakter.',
+            'kemasan.required'   => 'Kemasan wajib diisi.',
+            'kemasan.max'        => 'Kemasan maksimal 35 karakter.',
+            'stok.required'      => 'Stok wajib diisi.',
+            'stok.integer'       => 'Stok harus berupa angka bulat.',
+            'stok.min'           => 'Stok tidak boleh negatif.',
+            'harga.required'     => 'Harga wajib diisi.',
+            'harga.integer'      => 'Harga harus berupa angka bulat.',
+            'harga.min'          => 'Harga tidak boleh negatif.',
+        ];
+    }
+
     public function index()
     {
-        $obats = Obat::all(); # Kode tersebut digunakan untuk mengambil seluruh data obat dari tabel obats kemudian menyimpannya ke dalam variabel $obats
-        return view('admin.obat.index', compact('obats')); # Menampilkan halaman index pada folder admin/obat dan mengirimkan data $obats ke view agar dapat ditampilkan dalam bentuk tabel daftar obat.
+        $obats = Obat::latest()->get();
+        return view('admin.obat.index', compact('obats'));
     }
 
-# Function create() digunakan untuk menampilkan form input data obat baru.
     public function create()
     {
-        return view('admin.obat.create'); # Menampilkan halaman create pada resources\views\admin\obat\create.blade.php
+        return view('admin.obat.create');
     }
 
-# Function store() digunakan untuk menyimpan data obat baru yang dikirim dari form input.
     public function store(Request $request)
     {
+        $validated = $request->validate($this->rules(), $this->messages());
 
-# Memvalidasi data input sebelum disimpan ke database dengan hanya boleh field tertentu saja sesuai aturan validasi.
-        $request->validate([
-            'nama_obat' => 'required|string',
-            'kemasan' => 'required|string',
-            'harga' => 'required|integer',
-        ]);
+        Obat::create($validated);
 
-# Menyimpan data obat baru ke dalam tabel obat di database.
-        Obat::create([
-            'nama_obat' => $request->nama_obat,
-            'kemasan' => $request->kemasan,
-            'harga' => $request->harga
-        ]);
-
-# Mengarahkan pengguna kembali ke halaman daftar obat setelah data berhasil disimpan serta menampilkan notifikasi bahwa data obat berhasil dibuat.
-        return redirect()
-            ->route('obat.index')
-            ->with('message', 'Data Obat Berhasil dibuat')
+        return redirect()->route('obat.index')
+            ->with('message', 'Data obat berhasil ditambahkan')
             ->with('type', 'success');
     }
 
-# Function edit() digunakan untuk menampilkan form edit data obat.
     public function edit(string $id)
     {
-        $obat = Obat::findOrFail($id); # Mencari data obat berdasarkan ID yang didapat dari route parameter.
-        return view('admin.obat.edit')->with([
-            'obat' => $obat
-        ]); # Menampilkan halaman edit dan mengirimkan data obat ke view agar dapat ditampilkan pada form edit.
+        $obat = Obat::findOrFail($id);
+        return view('admin.obat.edit', compact('obat'));
     }
 
-# Function update() digunakan untuk memperbarui data obat yang sudah ada di database
-public function update(Request $request, string $id)
+    public function update(Request $request, string $id)
     {
-        $request->validate([
-            'nama_obat' => 'required|string',
-            'kemasan' => 'nullable|string',
-            'harga' => 'required|integer',
-        ]);
+        $validated = $request->validate($this->rules(), $this->messages());
 
-        $obat = Obat::findOrFail($id); # Melakukan validasi data dari form edit sebelum data diperbarui.
+        Obat::findOrFail($id)->update($validated);
 
-# Memperbarui data obat yang telah ditemukan sebelumnya.
-        $obat->update([
-            'nama_obat' => $request->nama_obat,
-            'kemasan' => $request->kemasan,
-            'harga' => $request->harga
-        ]);
-
-        return redirect()
-            ->route('obat.index')
-            ->with('message', 'Data Obat berhasil di edit')
+        return redirect()->route('obat.index')
+            ->with('message', 'Data obat berhasil diperbarui')
             ->with('type', 'success');
     }
 
-# Function destroy() digunakan untuk menghapus data obat dari database.
     public function destroy(string $id)
     {
+        Obat::findOrFail($id)->delete();
 
-# mencari data obat berdasarkan ID, kemudian menghapus data tersebut dari tabel obat.
-        $obat = Obat::findOrFail($id);
-        $obat->delete();
-
-        return redirect()
-            ->route('obat.index')
-            ->with('message', 'Data Obat berhasil di Hapus')
+        return redirect()->route('obat.index')
+            ->with('message', 'Data obat berhasil dihapus')
             ->with('type', 'success');
     }
 }
